@@ -3,6 +3,7 @@
 #include "reg_mgr.h"
 #include "report.h"
 #include "frame_offset.h"
+#include "ugen_regdef.h"
 
 {Extern variables}
 var
@@ -18,7 +19,6 @@ type
     offset: integer;
     next: ^Temp_rec;
 end;
-
 
 var
     temps: ^Temp_rec;
@@ -108,7 +108,7 @@ procedure gen_store(reg: registers; offset: integer; areaSize: integer);
 var
     op: first(asmcodes)..last(asmcodes);
 begin
-    if (reg in [xr0..xr31]) then begin
+    if (reg in [gpr_zero..gpr_ra]) then begin
         if (areaSize <= 4) then begin
             op := zsw;
         end else if (areaSize <= 8) then begin
@@ -165,7 +165,7 @@ begin
     gen_store(reg, spill.temp^.offset, areaSize);
 end;
 
-procedure free_temp(index: u8); {Guess}
+procedure free_temp(index: u8);
 var
     temp: Ptemp;
 begin

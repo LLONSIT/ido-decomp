@@ -7,9 +7,8 @@ function temp_offset(index: u8): integer; external;
 function temp_usage_count(index: u8): u16; external;
 function get_temp_area_size(): integer; external;
 procedure init_temps(); external;
-procedure spill_to_temp(arg0: u8; area_size: integer); external;
+procedure spill_to_temp(arg0: registers; area_size: integer); external;
 procedure free_temp(index: u8); external;
 procedure set_temps_offset(offset: integer); external;
-function usage_count(arg0: u8): u16; external;
 procedure gen_store(arg0: u8; temp_id: integer; arg2: integer); external; 
 #endif /* TMP_MGR_H */
