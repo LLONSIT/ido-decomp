@@ -145,7 +145,7 @@ void UW_CONST_i(int arg0) {
 }
 
 void UW_CONST_lli(int arg0, int arg1) {
-    UWRITE(&arg0, 8U);
+    UWRITE(&arg0, sizeof(arg0));
 }
 
 int U_DT(UnkCodegen_Struct *arg0) {
