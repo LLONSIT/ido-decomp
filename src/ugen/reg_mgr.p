@@ -117,9 +117,9 @@ var
 begin
     for i := xr0 to xnoreg do begin
         regs[i].unk0 := nil;
-        regs[i].unk4 := 0;
+        regs[i].usage_count := 0;
         regs[i].unk6 := xnoreg;
-        regs[i].unk7 := xr0;
+        regs[i].reg_available := gpr_zero;
         regs[i].reg_kind := no_reg;
     end;
     
@@ -130,7 +130,7 @@ begin
         add_to_free_list(mips_cg_regs[j]);
     end;
 
-    for i := xr8 to registers(n_unsaved_regs + 7) do begin
+    for i := gpr_t0 to registers(n_unsaved_regs + 7) do begin
         add_to_free_list(i);
     end;
 
@@ -156,21 +156,21 @@ begin
             i := succ(succ(i));
         end;
     end;
-    for i := xr4 to registers(ord(n_parm_regs) + 3) do begin
-        regs[i].unk7 := xr0;
-        regs[i].unk4 := 0;
+    for i := gpr_a0 to registers(ord(n_parm_regs) + 3) do begin
+        regs[i].reg_available := gpr_zero;
+        regs[i].usage_count := 0;
     end;
 
     i := xfr12;
     while (i <= registers(cardinal((n_fp_parm_regs * 2) + 16#2A))) do begin
-        regs[i].unk7 := xr0;
-        regs[i].unk4 := 0;
+        regs[i].reg_available := gpr_zero;
+        regs[i].usage_count := 0;
         i := succ(succ(i));
     end;
 
     for i := xr16 to registers(ord (n_saved_regs) + 15) do begin
-        regs[i].unk7 := xr0;
-        regs[i].unk4 := 0;
+        regs[i].reg_available := gpr_zero;
+        regs[i].usage_count := 0;
     end;
 
     i := registers(16#34);
@@ -178,8 +178,8 @@ begin
         if ufsm then begin
             add_to_fp_free_list(i, no_reg);
         end else begin
-            regs[i].unk7 := xr0;
-            regs[i].unk4 := 0;
+            regs[i].reg_available := gpr_zero;
+            regs[i].usage_count := 0;
         end;
         i := succ(succ(i));
     end;
@@ -751,14 +751,11 @@ label fill;
 begin
     if ((regs[arg0].reg_available <> gpr_zero)) then begin
         if (remove_from_list(arg0, gp_regs_used)) then begin 
-            append_to_list(arg0, gp_regs_free);
-            goto fill;
+            return;
         end;
-    end else begin
-        fill:
-        fill_reg(arg0, nil, 0, i_reg);
+        append_to_list(arg0, gp_regs_free);
     end;
-    
+    fill_reg(arg0, nil, 0, i_reg);
 end;
 
 procedure add_to_free_list(arg0: registers);
