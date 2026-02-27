@@ -258,7 +258,7 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
         fprintf(stderr, "%s: ", myname);
         fflush(stderr);
     }
-    if (options[15] != 0) {
+    if (options[OPTION_CHECKSTACK]) {
         temp_v0 = get_runtime_id("_RtlCheckStack", void_type, 0);
         if (temp_v0 != 0) {
             Ucp->Opc = 0x63;
