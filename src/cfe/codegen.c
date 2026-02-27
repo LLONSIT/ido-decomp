@@ -254,7 +254,7 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
     Ucp = (struct Bcrec*)Uout_buff;
 
     UW_CONST_m((size_t) strlen(arg0) >= 1024 + 1 ? 1024 : strlen(arg0), arg0);
-    if (options[3] & 8) {
+    if (options[OPTION_VERBOSITY] & VERBOSE_FLAG_8) {
         fprintf(stderr, "%s: ", myname);
         fflush(stderr);
     }
