@@ -109,30 +109,28 @@ begin
 end;
 
 { Regalloc }
-#ifdef NON_MATCHING
+
 procedure init_regs();
 var
     i: registers;
     j: cardinal;
-    j2: cardinal;
 begin
-    for j := 0 to n_registers do begin
-        regs[registers(j)].unk0 := nil;
-        regs[registers(j)].usage_count := 0;
-        regs[registers(j)].unk6 := xnoreg;
-        regs[registers(j)].reg_available := gpr_zero;
-        regs[registers(j)].reg_kind := no_reg;
+    for i := xr0 to xnoreg do begin
+        regs[i].unk0 := nil;
+        regs[i].unk4 := 0;
+        regs[i].unk6 := xnoreg;
+        regs[i].unk7 := xr0;
+        regs[i].reg_kind := no_reg;
     end;
     
     gp_regs_free.unk0 := xnoreg;
     gp_regs_free.unk1 := xnoreg;
 
-    for j2 := 1 to n_cg_regs do begin
-        i := mips_cg_regs[j2];
-        add_to_free_list(i);
+    for j := 1 to n_cg_regs do begin
+        add_to_free_list(mips_cg_regs[j]);
     end;
 
-    for i := gpr_t0 to registers(n_unsaved_regs + 7) do begin
+    for i := xr8 to registers(n_unsaved_regs + 7) do begin
         add_to_free_list(i);
     end;
 
@@ -158,21 +156,21 @@ begin
             i := succ(succ(i));
         end;
     end;
-    for i := gpr_a0 to registers(ord(n_parm_regs) + 3) do begin
-        regs[i].reg_available := gpr_zero;
-        regs[i].usage_count := 0;
+    for i := xr4 to registers(ord(n_parm_regs) + 3) do begin
+        regs[i].unk7 := xr0;
+        regs[i].unk4 := 0;
     end;
 
     i := xfr12;
-        regs[i].reg_available := gpr_zero;
     while (i <= registers(cardinal((n_fp_parm_regs * 2) + 16#2A))) do begin
-        regs[i].usage_count := 0;
+        regs[i].unk7 := xr0;
+        regs[i].unk4 := 0;
         i := succ(succ(i));
     end;
 
-    for i := gpr_s0 to registers(ord (n_saved_regs) + 15) do begin
-        regs[i].reg_available := gpr_zero;
-        regs[i].usage_count := 0;
+    for i := xr16 to registers(ord (n_saved_regs) + 15) do begin
+        regs[i].unk7 := xr0;
+        regs[i].unk4 := 0;
     end;
 
     i := registers(16#34);
@@ -180,8 +178,8 @@ begin
         if ufsm then begin
             add_to_fp_free_list(i, no_reg);
         end else begin
-            regs[i].reg_available := gpr_zero;
-            regs[i].usage_count := 0;
+            regs[i].unk7 := xr0;
+            regs[i].unk4 := 0;
         end;
         i := succ(succ(i));
     end;
@@ -191,11 +189,7 @@ begin
     gp_regs_used.unk1 := xnoreg;
     fp_regs_used.unk0 := xnoreg;
     fp_regs_used.unk1 := xnoreg;
-
 end;
-#else
-GLOBAL_ASM("asm/7.1/functions/ugen/reg_mgr/init_regs.s")
-#endif
 
 procedure fill_reg(arg0: registers; arg1: ^tree; arg2: u16; reg_kind: RegKind);
 begin

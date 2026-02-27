@@ -103,7 +103,187 @@ begin
     end;
 end;
 
-GLOBAL_ASM("asm/7.1/functions/ugen/aio/write_instruction.s")
+procedure write_instruction(var arg0: Text);
+label done;
+var
+    var_s7: cardinal;
+    var_s2: integer;
+    var_s0: cardinal;
+    
+begin
+    write(arg0, chr(9));
+
+    if ((in_file^.op <> zcia) and (in_file^.op <> zdli)) then begin
+        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
+    end;
+    with in_file^ do begin
+    case in_file^.form of 
+        frob:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+
+            if (symno <> 0) then begin
+                put_sym(arg0, symno);
+                put_integer_ws(arg0, regoffset);
+            end else begin
+                write(arg0, regoffset:1);
+            end;
+        
+            write(arg0, '(');
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ')');
+            if (mem_tag <> 0) then begin
+                write(arg0, ", ");
+                write(arg0, mem_tag:1);
+            end;
+        end;
+
+        fra:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+            put_integer_ws(arg0, immediate);
+            if (mem_tag <> 0) then begin
+                write(arg0, ", ");
+                write(arg0, mem_tag:1);
+            end;
+        end;
+
+        fri:
+        begin
+            if (op <> znop) then begin
+                if ((op = fli_s) or (op = fli_d)) then begin
+                    write(arg0, reg_name_tab[reg1]:0);
+                    write(arg0,  ", ");
+                    var_s2 := in_file^.immediate;
+                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
+                        get(in_file);
+                        for var_s0 := 1 to 16 do begin
+                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
+                                put_alpha(arg0, in_file^.data[var_s0]);
+                            end else begin
+                                goto done;
+                            end;
+                        end;
+                    end;
+                end else if (op = zcia) then begin
+                    var_s2 := in_file^.immediate;
+                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
+                        get(in_file);
+                        for var_s0 := 1 to 16 do begin
+                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
+                                write(arg0, in_file^.data[var_s0]);
+                            end else begin
+                                goto done;
+                            end;
+                        end;
+                    end;
+                end else if (op = zdli) then begin
+                    if (second_dli) then begin
+                        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
+                        write(arg0, reg_name_tab[reg1]:0);
+                        write(arg0, ", ");
+                        val64.dwval_l := immediate;
+                        write(arg0, val64.dwval:1);
+                        second_dli := false;
+                    end else begin
+                        val64.dwval_h := immediate; 
+                        second_dli := true;
+                    end;
+                end else begin
+                    write(arg0, reg_name_tab[reg1]:0);
+                    write(arg0, ", ");
+                    write(arg0, immediate:1);
+                end;
+            end;
+        end;
+
+        frrr:
+        begin
+            if (reg1 <> xnoreg) then begin
+                write(arg0, reg_name_tab[reg1]:0);
+                write(arg0, ", ");
+            end;
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg3]:0); 
+        end;
+
+        frri:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            write(arg0, immediate:1);   
+        end;
+
+        frr:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);   
+        end;
+
+        fa:
+        begin
+            put_sym(arg0, symno);
+            put_integer_ws(arg0, immediate);
+        end;
+
+        fr:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+        end;
+        
+        fi:
+        begin
+            write(arg0, immediate:1);
+        end;
+        
+        frrl:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+        end;
+        
+        frl:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+        end;
+
+        fl:
+        begin
+            put_sym(arg0, symno);
+            
+        end;
+
+        forrr:
+        begin
+            report_error(Internal, 939, "aio.p", "orrr type instruction");
+        end;
+
+        fril:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, immediate:1);
+            write(arg0, ", ");   
+            put_sym(arg0, symno);
+        end;
+    end;
+    end;
+
+done:
+    writeln(arg0);
+end;
 
 procedure print_source(var arg0: Text; idn: integer; arg2: integer);
 var
@@ -165,7 +345,188 @@ begin
     end;
 end;
 
-GLOBAL_ASM("asm/7.1/functions/ugen/aio/write_directive.s")
+
+procedure write_instruction(var arg0: Text);
+label done;
+var
+    var_s7: cardinal;
+    var_s2: integer;
+    var_s0: cardinal;
+    
+begin
+    write(arg0, chr(9));
+
+    if ((in_file^.op <> zcia) and (in_file^.op <> zdli)) then begin
+        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
+    end;
+    with in_file^ do begin
+    case in_file^.form of 
+        frob:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+
+            if (symno <> 0) then begin
+                put_sym(arg0, symno);
+                put_integer_ws(arg0, regoffset);
+            end else begin
+                write(arg0, regoffset:1);
+            end;
+        
+            write(arg0, '(');
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ')');
+            if (mem_tag <> 0) then begin
+                write(arg0, ", ");
+                write(arg0, mem_tag:1);
+            end;
+        end;
+
+        fra:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+            put_integer_ws(arg0, immediate);
+            if (mem_tag <> 0) then begin
+                write(arg0, ", ");
+                write(arg0, mem_tag:1);
+            end;
+        end;
+
+        fri:
+        begin
+            if (op <> znop) then begin
+                if ((op = fli_s) or (op = fli_d)) then begin
+                    write(arg0, reg_name_tab[reg1]:0);
+                    write(arg0,  ", ");
+                    var_s2 := in_file^.immediate;
+                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
+                        get(in_file);
+                        for var_s0 := 1 to 16 do begin
+                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
+                                put_alpha(arg0, in_file^.data[var_s0]);
+                            end else begin
+                                goto done;
+                            end;
+                        end;
+                    end;
+                end else if (op = zcia) then begin
+                    var_s2 := in_file^.immediate;
+                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
+                        get(in_file);
+                        for var_s0 := 1 to 16 do begin
+                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
+                                write(arg0, in_file^.data[var_s0]);
+                            end else begin
+                                goto done;
+                            end;
+                        end;
+                    end;
+                end else if (op = zdli) then begin
+                    if (second_dli) then begin
+                        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
+                        write(arg0, reg_name_tab[reg1]:0);
+                        write(arg0, ", ");
+                        val64.dwval_l := immediate;
+                        write(arg0, val64.dwval:1);
+                        second_dli := false;
+                    end else begin
+                        val64.dwval_h := immediate; 
+                        second_dli := true;
+                    end;
+                end else begin
+                    write(arg0, reg_name_tab[reg1]:0);
+                    write(arg0, ", ");
+                    write(arg0, immediate:1);
+                end;
+            end;
+        end;
+
+        frrr:
+        begin
+            if (reg1 <> xnoreg) then begin
+                write(arg0, reg_name_tab[reg1]:0);
+                write(arg0, ", ");
+            end;
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg3]:0); 
+        end;
+
+        frri:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            write(arg0, immediate:1);   
+        end;
+
+        frr:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);   
+        end;
+
+        fa:
+        begin
+            put_sym(arg0, symno);
+            put_integer_ws(arg0, immediate);
+        end;
+
+        fr:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+        end;
+        
+        fi:
+        begin
+            write(arg0, immediate:1);
+        end;
+        
+        frrl:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, reg_name_tab[reg2]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+        end;
+        
+        frl:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            put_sym(arg0, symno);
+        end;
+
+        fl:
+        begin
+            put_sym(arg0, symno);
+            
+        end;
+
+        forrr:
+        begin
+            report_error(Internal, 939, "aio.p", "orrr type instruction");
+        end;
+
+        fril:
+        begin
+            write(arg0, reg_name_tab[reg1]:0);
+            write(arg0, ", ");
+            write(arg0, immediate:1);
+            write(arg0, ", ");   
+            put_sym(arg0, symno);
+        end;
+    end;
+    end;
+
+done:
+    writeln(arg0);
+end;
 
 procedure put_string(var arg0: text; arg1: boolean);
 label
@@ -199,10 +560,9 @@ loop_end:
     end;
 end;
 
-
 procedure output_inst_ascii(var arg0: Stringtext; var arg1: Text);
 begin
-    reset(in_file, arg0.ss); {Just need to do an addr here..}
+    reset(in_file, arg0.ss);
 
     while not eof(in_file) do begin 
         if in_file^.instr = iocode then begin

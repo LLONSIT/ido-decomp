@@ -3,10 +3,8 @@
 #include "common.h"
 
 typedef struct UnkCodegen_Struct_s {
-    char pad0[4];
-    int unk4;
-    char pad8[0x10];
-    int unk18;
+    TreeNode node;
+    unsigned int unk18;
 } UnkCodegen_Struct;
 
 struct Uw_if {     /* output format for each type	*/
@@ -66,9 +64,9 @@ void UW_CONST_str(char *str) {
     } else {
         len = strlen(str);
     }
-    UWRITE(&len, 4U);
+    UWRITE(&len, sizeof(len));
     len = (int) (len + 3) / 4;
-    UWRITE(&len, 4U);
+    UWRITE(&len, sizeof(len));
     if ((len & 1) == 1) {
         len++;
     }
@@ -144,59 +142,58 @@ void UW_CONST_i(int arg0) {
     UWRITE(&sp20, 8U);
 }
 
-void UW_CONST_lli(int arg0, int arg1) {
+void UW_CONST_lli(long long arg0) {
     UWRITE(&arg0, sizeof(arg0));
 }
 
-int U_DT(UnkCodegen_Struct *arg0) {
-
-    switch (arg0->unk4) {
-        case 19:
-        case 24:
-            return 9;
-        case 22:
-            return addr_dtype;
-        case 21:
-            return 2;
-        case 17:
-        case 18:
-            return 0xB;
-        case 4:
-            return 0xA;
-        case 10:
-            __assert("FALSE", "codegen.c", 0xC0);
-            /* fallthrough */
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 20:
-            if ((unsigned int) arg0->unk18 >= 0x21U) {
-                return 5;
-            }
-            return 6;
-        case 11:
-            __assert("FALSE", "codegen.c", 0xD2);
-            /* fallthrough */
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-            if ((unsigned int) arg0->unk18 >= 0x21U) {
-                return 7;
-            }
-            return 8;
-        case 1:
-        case 2:
-        case 3:
-            if (arg0->unk18 == 0x20) {
-                return 0xD;
-            }
-            return 0xC;
-        default:
-            return __assert("FALSE", "codegen.c", 0xE9);
+enum Datatype U_DT(UnkCodegen_Struct *arg0) {
+    switch (arg0->node.code) {
+    case Array_type:
+    case Struct_type:
+        return Mdt;
+    case Pointer_type:
+        return addr_dtype;
+    case Func_type:
+        return Fdt;
+    case Void_type:
+    case Any_type:
+        return Pdt;
+    case Label_type:
+        return Ndt;
+    case Signed_type:
+        __assert("FALSE", "codegen.c", 192);
+        /* fallthrough */
+    case Char_type:
+    case Int_type:
+    case Long_type:
+    case Longlong_type:
+    case Short_type:
+    case Enum_type:
+        if (arg0->unk18 >= 0x21) {
+            return Idt;
+        }
+        return Jdt;
+    case Unsigned_type:
+        __assert("FALSE", "codegen.c", 210);
+        /* fallthrough */
+    case Uchar_type:
+    case Uint_type:
+    case Ulong_type:
+    case Ulonglong_type:
+    case Ushort_type:
+        if (arg0->unk18 >= 0x21) {
+            return Kdt;
+        }
+        return Ldt;
+    case Double_type:
+    case Longdouble_type:
+    case Float_type:
+        if (arg0->unk18 == 0x20) {
+            return Rdt;
+        }
+        return Qdt;
+    default:
+        return __assert("FALSE", "codegen.c", 233);
     }
 }
 
@@ -212,11 +209,11 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
     }
     Ucp = (struct Bcrec*)Uout_buff;
     if (bit_size[9] == 0x40) {
-        addr_dtype = 15;
+        addr_dtype = Wdt;
     } else {
-        addr_dtype = 0;
+        addr_dtype = Adt;
     }
-    Ucp->Opc = 7;
+    Ucp->Opc = Ubgn;
     if (options[OPTION_ENDIANNESS] != 0) {
         Ucp->I1 = 0;
     } else {
@@ -231,7 +228,7 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
         Ucp = (struct Bcrec*)Uout_buff;
     }
     
-    Ucp->Opc = 0x63;
+    Ucp->Opc = Uoptn;
     Ucp->I1 = 0;
     Ucp->Uopcde.uiequ1.Length = arg2;
 
@@ -241,8 +238,8 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
         Ucp = (struct Bcrec*)Uout_buff;
     }
     
-    Ucp->Opc = 0x13;
-    Ucp->Dtype = 9;
+    Ucp->Opc = Ucomm;
+    Ucp->Dtype = Mdt;
 
     Ucp = (struct Bcrec*)((char*)Ucp + Uw_of[Ucp->Opc].Of_nbytes);
     if ((char*)Ucp - (char*)Uout_buff > 0x800) {

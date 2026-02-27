@@ -8,7 +8,7 @@
 #define U_BUF_LEN 4096
 
 #define UPUT_FD_FLAGS (O_CREAT | O_TRUNC | O_WRONLY)
-#define UPUT_FD_MODE  (S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+#define UPUT_FD_MODE  0666
 
 static int UgetBuf[U_BUF_LEN];
 static int UgetPos;
