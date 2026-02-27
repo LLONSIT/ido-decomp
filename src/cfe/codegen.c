@@ -217,7 +217,7 @@ int init_codegen(char *arg0, FILE *arg1, int arg2) {
         addr_dtype = 0;
     }
     Ucp->Opc = 7;
-    if (options[2] != 0) {
+    if (options[OPTION_ENDIANNESS] != 0) {
         Ucp->I1 = 0;
     } else {
         Ucp->I1 = 1;
