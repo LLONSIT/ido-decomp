@@ -49,7 +49,7 @@ extern int addr_dtype;
 extern FILE *Ucw_binout;
 
 void UWRITE(void *ucode, int size) {
-    if (debug_arr[0x55] >= 3) {
+    if (debug_arr['U'] >= 3) {
         fprintf(dbgout, "writing ucode size=%d\n", size);
     }
     if (fwrite(ucode, 1, size, Ucw_binout) != (unsigned int) size) {
