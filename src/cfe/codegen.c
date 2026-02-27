@@ -107,7 +107,7 @@ void UW_CONST_f(char *arg0, double arg2, int arg4) {
     char buf[1024];
     char *ptr;
 
-    if (arg0 == (void *) 0) {
+    if (arg0 == NULL) {
         sprintf(buf, "%.16e", arg2);
         if (strncmp(buf, "inf", strlen("inf")) == 0) {
             error(0x3010C, LEVEL_WARNING, arg4, "infinity");
