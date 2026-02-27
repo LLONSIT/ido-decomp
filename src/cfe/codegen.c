@@ -52,7 +52,7 @@ void UWRITE(void *ucode, int size) {
     if (debug_arr[0x55] >= 3) {
         fprintf(dbgout, "writing ucode size=%d\n", size);
     }
-    if (fwrite(ucode, 1, size, Ucw_binout) != size) {
+    if (fwrite(ucode, 1, size, Ucw_binout) != (unsigned int) size) {
         error(0x50087, LEVEL_FATAL, -1, infile ? infile : "");
     }
 }
@@ -172,7 +172,7 @@ int U_DT(UnkCodegen_Struct *arg0) {
         case 8:
         case 9:
         case 20:
-            if ((int) arg0->unk18 >= 0x21U) {
+            if ((unsigned int) arg0->unk18 >= 0x21U) {
                 return 5;
             }
             return 6;
@@ -184,7 +184,7 @@ int U_DT(UnkCodegen_Struct *arg0) {
         case 14:
         case 15:
         case 16:
-            if ((int) arg0->unk18 >= 0x21U) {
+            if ((unsigned int) arg0->unk18 >= 0x21U) {
                 return 7;
             }
             return 8;
