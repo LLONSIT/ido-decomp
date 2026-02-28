@@ -8,20 +8,30 @@
 
 type
     hex_str = packed array [1..10] of char; /* :=  "0123456789ABCDEF" */
-
+    OpcodeTabString = packed array [1..10] of char;
+    Regname = packed array[1..5] of char;
+    BinasmFile = File of binasm;
+    itype_str = array [1..12] of char;
+    reg_str = array [1..5] of char;
+    
 var
     source_language: integer;
     hex_tab : array [0..15] of char;
-    in_file: File of binasm;
+    in_file: BinasmFile;
     current_filen: integer;
     current_linen: integer;
     source_file: Text;
     source_file_name: Filename;
+    opcode_tab: array [first(asmcodes)..last(asmcodes)] of OpcodeTabString;
+    reg_name_tab: array [first(registers)..last(registers)] of Regname;
+    itype_tab: array [first(itype)..last(itype)] of itype_str;
+    iopt_tab: array [first(set_value)..last(set_value)] of itype_str;
+    ioption_type_tab: array [opt_compat_align] of array [1..15] of char;
+    second_dli: boolean;
+    val64: Valu;
 
 #define ST_COPY(ustr, st) len := 1; while (st^[len] <> chr(0)) do begin ustr[len] := st^[len]; len := len + 1 end;
-
-procedure write_instruction(var arg0: text); external; 
-procedure write_directive(var arg0: text); external; 
+procedure put_string(var arg0: text; arg1: boolean); forward;
 
 procedure put_integer_ws(var pFile: text; val: integer);
 begin
@@ -345,190 +355,251 @@ begin
     end;
 end;
 
-
-procedure write_instruction(var arg0: Text);
-label done;
-var
-    var_s7: cardinal;
-    var_s2: integer;
-    var_s0: cardinal;
-    
+procedure write_directive(var arg0: Text);
+    var
+        sp44: cardinal;
 begin
-    write(arg0, chr(9));
-
-    if ((in_file^.op <> zcia) and (in_file^.op <> zdli)) then begin
-        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
-    end;
+    {temp_s2 := unk4;}
     with in_file^ do begin
-    case in_file^.form of 
-        frob:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-
-            if (symno <> 0) then begin
-                put_sym(arg0, symno);
-                put_integer_ws(arg0, regoffset);
-            end else begin
-                write(arg0, regoffset:1);
-            end;
-        
-            write(arg0, '(');
-            write(arg0, reg_name_tab[reg2]:0);
-            write(arg0, ')');
-            if (mem_tag <> 0) then begin
-                write(arg0, ", ");
-                write(arg0, mem_tag:1);
-            end;
-        end;
-
-        fra:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
+    if instr <> isym then begin
+        if instr = ilabel then begin
             put_sym(arg0, symno);
-            put_integer_ws(arg0, immediate);
-            if (mem_tag <> 0) then begin
-                write(arg0, ", ");
-                write(arg0, mem_tag:1);
+            write(arg0, ':');
+            writeln(arg0);
+        end else begin
+            write(arg0, chr(9));
+            write(arg0, itype_tab[instr]:0, chr(9));
+            case instr of
+            ialign,
+            ispace,
+            ishift_addr:
+            begin
+                write(arg0, length:1);
             end;
-        end;
 
-        fri:
-        begin
-            if (op <> znop) then begin
-                if ((op = fli_s) or (op = fli_d)) then begin
-                    write(arg0, reg_name_tab[reg1]:0);
-                    write(arg0,  ", ");
-                    var_s2 := in_file^.immediate;
-                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
-                        get(in_file);
-                        for var_s0 := 1 to 16 do begin
-                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
-                                put_alpha(arg0, in_file^.data[var_s0]);
-                            end else begin
-                                goto done;
-                            end;
-                        end;
-                    end;
-                end else if (op = zcia) then begin
-                    var_s2 := in_file^.immediate;
-                    for var_s7 := 1 to integer(var_s2 - 1) div 16 + 1 do begin {Get align 16}
-                        get(in_file);
-                        for var_s0 := 1 to 16 do begin
-                            if (lshift(var_s7, 4) - 16 + var_s0 <= var_s2) then begin
-                                write(arg0, in_file^.data[var_s0]);
-                            end else begin
-                                goto done;
-                            end;
-                        end;
-                    end;
-                end else if (op = zdli) then begin
-                    if (second_dli) then begin
-                        write(arg0, opcode_tab[in_file^.op]:0, chr(9));
-                        write(arg0, reg_name_tab[reg1]:0);
-                        write(arg0, ", ");
-                        val64.dwval_l := immediate;
-                        write(arg0, val64.dwval:1);
-                        second_dli := false;
-                    end else begin
-                        val64.dwval_h := immediate; 
-                        second_dli := true;
-                    end;
+            idouble,
+            ifloat:
+            begin
+                sp44 := rep;
+                put_string(arg0, false);
+                write(arg0, ':');
+                write(arg0, sp44:1);
+            end;
+
+            iascii,
+            iasciiz:
+            begin
+                put_string(arg0, true);
+            end;
+
+            ifile:
+            begin
+                write(arg0, symno:1);
+                write(arg0, ' ');
+                put_string(arg0, true);
+            end;
+
+            ibyte,
+            ihalf,
+            igpword,
+            iword:
+            begin
+                if symno = 0 then begin
+                    write(arg0, expression:1);
+                    write(arg0, ' ');
+                    write(arg0, ':');
+                    write(arg0, ' ');
+                    write(arg0, replicate:1);
                 end else begin
-                    write(arg0, reg_name_tab[reg1]:0);
-                    write(arg0, ", ");
-                    write(arg0, immediate:1);
+                    put_sym(arg0, symno);
+                    put_integer_ws(arg0, expression);
                 end;
             end;
-        end;
 
-        frrr:
-        begin
-            if (reg1 <> xnoreg) then begin
-                write(arg0, reg_name_tab[reg1]:0);
-                write(arg0, ", ");
+            idword:
+            begin
+                val64.dwval_l := expression;
+                get(in_file);
+                val64.dwval_h := in_file^.expression;
+                write(arg0, val64.dwval:1);
+                write(arg0, ' ');
+                write(arg0, ':');
+                write(arg0, ' ');
+                write(arg0, rep:1);
             end;
-            write(arg0, reg_name_tab[reg2]:0);
-            write(arg0, ", ");
-            write(arg0, reg_name_tab[reg3]:0); 
-        end;
-
-        frri:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-            write(arg0, reg_name_tab[reg2]:0);
-            write(arg0, ", ");
-            write(arg0, immediate:1);   
-        end;
-
-        frr:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-            write(arg0, reg_name_tab[reg2]:0);   
-        end;
-
-        fa:
-        begin
-            put_sym(arg0, symno);
-            put_integer_ws(arg0, immediate);
-        end;
-
-        fr:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-        end;
-        
-        fi:
-        begin
-            write(arg0, immediate:1);
-        end;
-        
-        frrl:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-            write(arg0, reg_name_tab[reg2]:0);
-            write(arg0, ", ");
-            put_sym(arg0, symno);
-        end;
-        
-        frl:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-            put_sym(arg0, symno);
-        end;
-
-        fl:
-        begin
-            put_sym(arg0, symno);
             
-        end;
+            icomm,
+            ilcomm,
+            iextern:
+            begin
+                put_sym(arg0, symno);
+                write(arg0, ' ');
+                write(arg0, length:1);
+                if rep <> 0 then begin
+                    write(arg0, ' ');
+                    write(arg0, 'S');
+                end;
+            end;
+            iweakext:
+            begin
+                put_sym(arg0, symno);
+                if lexlevel <> 0 then begin
+                    write(arg0, ',');
+                    put_sym(arg0, lexlevel);
+                end;
+            end;
 
-        forrr:
-        begin
-            report_error(Internal, 939, "aio.p", "orrr type instruction");
-        end;
+            iglobal,
+            iend,
+            ilab:
+            begin
+                put_sym(arg0, symno);
+            end;
 
-        fril:
-        begin
-            write(arg0, reg_name_tab[reg1]:0);
-            write(arg0, ", ");
-            write(arg0, immediate:1);
-            write(arg0, ", ");   
-            put_sym(arg0, symno);
+            iframe:
+            begin
+                write(arg0, reg_name_tab[framereg]:0);
+                write(arg0, ', ');
+                write(arg0, frameoffset:1);
+                write(arg0, ', ');
+                write(arg0, reg_name_tab[pcreg]:0);
+            end;
+
+            ivreg:
+            begin
+                write(arg0, reg_name_tab[reg1]:0);
+                write(arg0, ', ');
+                write(arg0, immediate:1);
+                write(arg0, ', ');
+                write(arg0, symno:1);
+            end;
+            iverstamp:
+            begin
+                write(arg0, majornumber:1);
+                write(arg0, ' ');
+                write(arg0, minornumber:1);
+            end;
+            iloc:
+            begin
+                write(arg0, filenumber:1);
+                write(arg0, ' ');
+                write(arg0, linenumber:1);
+            end;
+
+            imask,
+            ifmask:
+            begin
+                put_hex10(arg0, regmask);
+                { should be write_string instead of write_char here, using two spaces}
+                write(arg0, '  ');
+                write(arg0, regoffset:1);
+            end;
+            ient,
+            iaent:
+            begin
+                put_sym(arg0, symno);
+                write(arg0, ' ');
+                write(arg0, lexlevel:1);
+            end;
+            ibgnb,
+            iendb:
+            begin
+                write(arg0, symno:1);
+            end;
+            
+            icprestore:
+            begin
+                write(arg0, length:1);
+            end;
+
+            iset:
+            begin
+                write(arg0, ' ');
+                write(arg0, iopt_tab[set_value(length)]:0);
+            end;
+            ioption:
+            begin
+                write(arg0, ioption_type_tab[option]:0);
+                if option = o_exception_info then begin
+                    write(arg0, ' ');
+                end;
+                write(arg0, opt_len:1);
+            end;
+
+            inoalias,
+            ialias:
+            begin
+                write(arg0, reg_name_tab[basereg1]:0);
+                write(arg0, ',');
+                write(arg0, reg_name_tab[basereg2]:0);
+            end;
+
+            ilivereg,
+            igjaldef,
+            igjallive,
+            igjrlive:
+            begin
+                put_hex10(arg0, gpmask);
+                write(arg0, ',');
+                put_hex10(arg0, fpmask);
+            end;
+
+            icpload,
+            icpadd,
+            icpalias:
+            begin
+                write(arg0, reg_name_tab[reg1]:0);
+            end;
+
+            iedata:
+            begin
+                write(arg0, flag:1);
+                write(arg0, ' ');
+                put_sym(arg0, symno);
+                write(arg0, ' ');
+                put_sym(arg0, edata);
+            end;
+
+            itext:
+            begin
+                if in_file^.length <> 0 then begin
+                    put_string(arg0, false);
+                end;
+            end;
+
+            iloopno:
+            begin
+                write(arg0, loopnum:1);
+                write(arg0, ' ');
+                write(arg0, lflag:1);
+            end;
+
+            iprologue:
+            begin
+                write(arg0, lexlevel:1);
+            end;
+
+            imtag:
+            begin
+                write(arg0, tagnumber:1);
+                write(arg0, ',');
+                write(arg0, tagtype:1);
+            end;
+
+            idata, isdata, irdata, irestext:
+            
+            end;
+            writeln(arg0);
+            
+            if (instr = iloc) then begin
+                print_source(arg0, filenumber, linenumber);
+            end;
         end;
     end;
     end;
-
-done:
-    writeln(arg0);
 end;
 
-procedure put_string(var arg0: text; arg1: boolean);
+procedure put_string({var arg0: text; arg1: boolean});
 label
     loop_end;
 var
