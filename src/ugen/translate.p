@@ -2076,8 +2076,6 @@ begin
     for i := load_count downto 1 do begin 
         temp_a1 := loads[i];
 
-        {Length -> 0x28} 
-        {Offset -> 0x2C} 
         if (temp_a1 <> nil) then begin
             if ((temp_a1^.u.Dtype = arg0^.u.Dtype) and (temp_a1^.u.Mtype = arg0^.u.Mtype) and (temp_a1^.u.I1 = arg0^.u.I1)) then begin
                 if ((UGEN_LITTLE_ENDIAN and (temp_a1^.u.Offset = arg0^.u.Offset)) or 
