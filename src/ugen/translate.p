@@ -103,39 +103,7 @@ begin
     end;
 end;
 
-
-function get_set_const(var arg0: Valu; arg1: integer; arg2: 0..100): cardinal;
-var
-    var_v0: integer;
-    var_t0: integer;
-    var_t1: integer;
-    temp_v1: integer;
-    i: cardinal;
-    var_a2: integer;
-    temp_a3 : integer;
-begin
-    var_v0 := arg0.Ival;
-    temp_v1 := arg1 + arg2;
-    
-    Assert(temp_v1 div 4 <= var_v0);
-
-    
-
-    var_t0 := 0;
-    if (UGEN_BIG_ENDIAN) then begin
-        var_a2 := arg1 div 4 + 1;
-        var_t1 := temp_v1 div 4;
-    end else begin
-        var_t1 := (var_v0 * 4 - arg1) div 4;
-        var_a2 := (var_v0 * 4 - temp_v1) div 4 + 1;
-    end;
-
-    for i := var_a2 to var_t1 do begin
-        var_t0 := var_t0 * 16 + ord(h[arg0.Chars^.ss[i]]);
-    end;
-    
-    return var_t0;
-end;
+{GLOBAL_ASM("../../asm/7.1/functions/ugen/translate/get_set_const.s")}
 
 procedure gen_set_str(arg0: ^tree);
 var
@@ -516,7 +484,7 @@ begin
     return arg0;
 end;
 
-GLOBAL_ASM("asm/7.1/functions/ugen/translate/translate.s")
+{GLOBAL_ASM("../../asm/7.1/functions/ugen/translate/translate.s")}
 
 function cse_equ(arg0: ^tree; arg1: ^tree): boolean;
 begin
@@ -1166,7 +1134,7 @@ begin
     return arg0^.u.Dtype = Gdt;
 end;
 
-GLOBAL_ASM("asm/7.1/functions/ugen/translate/translate_cvtl.s")
+{GLOBAL_ASM("../../asm/7.1/functions/ugen/translate/translate_cvtl.s")}
 
 function need_check_hl(arg0: ^tree): boolean;
 var

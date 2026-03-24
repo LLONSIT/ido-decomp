@@ -18,19 +18,19 @@ begin
     return (arg0^.u.Constval.Ival + 1) <> 0;
 end;
 
-function parm_reg(arg0: ^Tree): integer;
+function parm_reg(arg0: ^Tree): registers;
 begin
     Assert(arg0^.u.Opc in [Upar, Updef, Urpar, Uvreg]);
 
     if (arg0^.u.Constval.Ival = -1) then begin
-        return ord(xnoreg);
+        return xnoreg;
     end;
 
     if (basicint = 0) then begin
-        return arg0^.u.Constval.Ival div 4;
+        return registers(arg0^.u.Constval.Ival div 4);
+    end else begin
+        return registers(arg0^.u.Constval.Ival div 8);
     end;
- 
-    return arg0^.u.Constval.Ival div 8;
 end;
 
 
@@ -145,7 +145,7 @@ begin
     end;
     
 done:
-    if ((arg0^.u.Opc = Ucup) and (IS_STACK_OVERFLOW_ATTR(arg0^.u.Offset))) then begin
+    if (arg0^.u.Opc = Ucup) and (IS_REALLOC_ARG_ATTR(arg0^.u.Extrnal)) then begin
         v0^.u.I1 := 1;
     end;
 end;
@@ -217,7 +217,7 @@ begin
     end;
 
     var_s0 := arg0^.next;
-    while not ((var_s0^.u.Opc in [Ucia, Ucup, Uicuf, Urcuf]) ) do begin        
+    while not (var_s0^.u.Opc in [Ucia, Ucup, Uicuf, Urcuf]) do begin        
         if (var_s0^.u.Opc = Upar) then begin
             check_amt_ref(var_s0^.op1);
         end;
