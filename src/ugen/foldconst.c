@@ -11,6 +11,10 @@
 extern int current_line;
 extern int print_warnings;
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 void warning(char* warn) {
     if (print_warnings != 0) {
         fprintf(stderr, "ugen: warning: line %d: %s\n", current_line, warn);
