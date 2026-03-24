@@ -44,7 +44,7 @@ procedure add_store(arg0: ^tree); forward;
 function set_rewrite_indexed(arg0: ^tree; arg1: ^tree; arg2: 0..32): pointer; forward;
 function check_vreg(arg0: ^tree; arg1: boolean): boolean; forward;
 function check_loads_exprs(arg0: ^tree): boolean; forward;
-function translate_cvtl(arg0: ^tree): pointer; external;
+function translate_cvtl(arg0: ^tree): pointer; forward;
 
 var
     vreg_count: integer;
@@ -90,6 +90,7 @@ var
     n_saved_regs: integer;
     n_saved_fp_regs: integer;
     addr_dtype: Datatype;
+    isa: mips_isa;
     opcode_arch: ( ARCH_32, ARCH_64 );
 
 
@@ -2282,9 +2283,83 @@ begin
     return arg0^.u.Dtype = Gdt;
 end;
 
-{Last nonmatching in ugen}
 
-{GLOBAL_ASM("../../asm/7.1/functions/ugen/translate/translate_cvtl.s")}
+function translate_cvtl({arg0: ^tree});
+label lab1;
+var
+    temp_v1: integer;
+    sp37: Datatype;
+    var_s0: ^tree;
+    var_a1: ^tree;
+begin
+    if (is_constant(arg0^.op1)) then begin 
+        return fold(arg0);
+    end;
+
+    sp37 := arg0^.u.Dtype;
+    temp_v1 := arg0^.u.I1;
+    var_s0 := dup_tree(arg0^.op1);
+    arg0^.visited := false;
+    free_tree(arg0);
+
+    if (temp_v1 >= 16#40) then begin
+        return var_s0;
+    end;
+
+    if (((var_s0^.u.Opc = Ulod) and not (is_reg(var_s0))) or (var_s0^.u.Opc = Uilod) or (var_s0^.u.Opc = Uisld)) then begin
+        if (var_s0^.u.Length * 8 < temp_v1) then begin
+            if ((var_s0^.u.Dtype = Jdt) and (sp37 <> Jdt) and ((sp37 <> Idt) or (isa < ISA_MIPS3))) then begin
+               goto lab1;
+            end else begin
+               return var_s0;
+           end;
+        end;
+
+        if ((var_s0^.u.Length * 8 = temp_v1) and (sp37 = var_s0^.u.Dtype)) then begin
+            return var_s0;
+        end;
+
+        {temp_a2 := temp_v1 div 8;}
+        if ((var_s0^.u.Lexlev & 1 = 0) and (var_s0^.ref_count < 2) and (temp_v1 & 7 = 0) and (((temp_v1 div 8) = 1) or ((temp_v1 div 8) = 2) or ((temp_v1 div 8) = 4) or ((temp_v1 div 8) = 8))) then begin
+            var_a1 := build_u(var_s0^.u);
+            if (var_s0^.u.Opc <> Ulod) then begin
+                if ((var_s0^.op1^.u.Opc = Ulod) and (is_reg(var_s0^.op1))) then begin
+                    var_a1^.op1 := build_u(var_s0^.op1^.u);
+                end else begin
+                    var_a1^.op1 := dup_tree(var_s0^.op1);
+                end;
+                {var_a1^.op1 := var_v0;}
+            end;
+            free_tree(var_s0);
+            if not (lsb_first) then begin
+                var_a1^.u.Offset := ((var_a1^.u.Offset + var_a1^.u.Length) - (temp_v1 div 8));
+            end;
+
+            var_a1^.u.Length := (temp_v1 div 8);
+            var_a1^.u.Dtype := sp37;
+            return var_a1;
+        end;
+    end;
+    lab1:
+    if (sp37 = Jdt) then begin
+        var_s0 := build_2op(Ushl, var_s0, ivalue(Ldt, 0, 32 - temp_v1));
+        var_s0^.u.Dtype := sp37;
+        var_s0 := build_2op(Ushr, var_s0, ivalue(Ldt, 0, 32 - temp_v1));
+    end else if (sp37 = Idt) then begin
+        var_s0 := build_2op(Ushl, var_s0, ivalue(Kdt, 0, 64 - temp_v1));
+        var_s0^.u.Dtype := sp37;
+        var_s0 := build_2op(Ushr, var_s0, ivalue(Kdt, 0, 64 - temp_v1));
+    end else begin
+        if (temp_v1 >= 32) then begin
+            var_s0 := build_2op(Uand, var_s0, ivalue(Kdt, lshift(1, temp_v1) - 1, -1));
+        end else begin
+            var_s0 := build_2op(Uand, var_s0, ivalue(Ldt, 0, lshift(1, temp_v1) - 1));
+        end;
+        var_s0^.u.Dtype := sp37;
+    end;
+    
+    return var_s0;
+end;
 
 function need_check_hl({arg0: ^tree});
 var
