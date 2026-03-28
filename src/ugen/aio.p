@@ -127,7 +127,7 @@ var
     current_filen: integer := -2;
     second_dli: boolean := False;
 
-#define ST_COPY(ustr, st) len := 1; while (st^[len] <> chr(0)) do begin ustr[len] := st^[len]; len := len + 1 end;
+#define ST_STRING_COPY(ustr, st) len := 1; while (st^[len] <> chr(0)) do begin ustr[len] := st^[len]; len := len + 1 end;
 
 procedure put_integer_ws(var pFile: text; val: integer);
 begin
@@ -157,7 +157,7 @@ begin
             if (str = pointer(-1)) then begin
                 write(pFile, "$$", idn:1);
             end else begin
-                ST_COPY(sp40.ss, str);
+                ST_STRING_COPY(sp40.ss, str);
             end;
 
             write(pFile, sp40.ss:0);
@@ -439,7 +439,7 @@ begin
         for len := 1 to FileNameLen do begin
             source_file_name[len] := ' ';
         end;
-        ST_COPY(source_file_name, str);
+        ST_STRING_COPY(source_file_name, str);
         if (source_file_name[1] = ' ') then begin
             report_error(Internal, 977, "aio.p", "file name is null");
             return;

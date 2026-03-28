@@ -16,6 +16,7 @@ var
     uses_gp: boolean;
     pic_level: integer;
 
+
 procedure save_i_ptrs();
 begin
     old_i_ptr := i_ptr;
