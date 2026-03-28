@@ -155,8 +155,6 @@ begin
 
     sym^.kind := kind;
 
-    writeln('Sym id: ', arg0);
-    writeln('Sym data area: ', data_area);
     sym^.unk0 := arg0;
     sym^.data_area := data_area;
 
