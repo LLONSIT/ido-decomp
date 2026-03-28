@@ -287,13 +287,13 @@ loop:
     var
         var_s1: ^tree;
     begin
-        write(pFile, 'L', arg0^.nodeID:1);
+        write(pFile, 'L', arg0^.node_id:1);
         write(pFile, " IN:");
 
         var_s1 := arg0^.op2;
 
         while (var_s1 <> nil) do begin
-            write(pFile, " L", var_s1^.op1^.nodeID:1);
+            write(pFile, " L", var_s1^.op1^.node_id:1);
             var_s1 := var_s1^.next;
         end;
 
@@ -301,7 +301,7 @@ loop:
 
         var_s1 := arg0^.op1;
         while (var_s1 <> nil) do begin
-            write(pFile, " L", var_s1^.op2^.nodeID:1);
+            write(pFile, " L", var_s1^.op2^.node_id:1);
             var_s1 := var_s1^.prior;
         end;
 

@@ -3050,7 +3050,7 @@ begin
                 end;
             end else begin
                 if (arg0^.op1^.u.Opc = Ucvt) and ((arg0^.op1^.u.Dtype = Jdt) or ((arg0^.op1^.u.Dtype = Idt) and (opcode_arch = ARCH_64))) and (arg0^.op1^.u.Dtype2 = Qdt) and (arg0^.op1^.ref_count = 1) and (arg0^.u.Length = 4) then begin
-                    move_cvt_flag := arg0^.op1^.nodeID;
+                    move_cvt_flag := arg0^.op1^.node_id;
                 end;
                 eval(arg0^.op1, xnoreg);
                 var_s3 := reg(arg0^.op1);
@@ -3066,7 +3066,7 @@ begin
                 end;
                 if (arg0^.u.Mtype = Pmt) and (arg0^.u.I1 = 0) then begin
                     var_s5 := store_op_tab[arg0^.u.Dtype];
-                    if move_cvt_flag = arg0^.op1^.nodeID then begin
+                    if move_cvt_flag = arg0^.op1^.node_id then begin
                         if arg0^.op1^.u.Dtype = Jdt then begin
                             var_s5 := zswc1;
                         end else begin
@@ -3080,7 +3080,7 @@ begin
                         emit_rob(var_s5, var_s3, arg0^.u.Offset, xr29, 0);
                     end;
                 end else begin
-                    if move_cvt_flag = arg0^.op1^.nodeID then begin
+                    if move_cvt_flag = arg0^.op1^.node_id then begin
                         if arg0^.op1^.u.Dtype = Jdt then begin
                             var_s5 := zswc1;
                         end else begin
@@ -3642,7 +3642,7 @@ begin
         Uisst,
         Uistr: begin
             if (arg0^.op2^.u.Opc = Ucvt) and ((arg0^.op2^.u.Dtype = Jdt) or ((arg0^.op2^.u.Dtype = Idt) and (opcode_arch = ARCH_64))) and (arg0^.op2^.u.Dtype2 = Qdt) and (arg0^.op2^.ref_count = 1) and (arg0^.u.Length = 4) then begin
-                move_cvt_flag := arg0^.op2^.nodeID;
+                move_cvt_flag := arg0^.op2^.node_id;
             end;
             eval(arg0^.op2, xnoreg);
             var_s2_2 := arg0^.op1;
@@ -3661,7 +3661,7 @@ begin
                     if temp_s7 then begin
                         emit_dir0(iset, 11);
                     end;
-                    if move_cvt_flag = arg0^.op2^.nodeID then begin
+                    if move_cvt_flag = arg0^.op2^.node_id then begin
                         if arg0^.op2^.u.Dtype = Jdt then begin
                             var_s5 := zswc1;
                         end else begin
@@ -3690,7 +3690,7 @@ begin
                         emit_dir0(iset, 11);
                     end;
                     emit_rrr(zaddu, temp_s4_2, frame_pointer, var_s3);
-                    if move_cvt_flag = arg0^.op2^.nodeID then begin
+                    if move_cvt_flag = arg0^.op2^.node_id then begin
                         if arg0^.op2^.u.Dtype = Jdt then begin
                             var_s5 := zswc1;
                         end else begin
@@ -3731,7 +3731,7 @@ begin
                         end;
                     end;
                 end;
-                if move_cvt_flag = arg0^.op2^.nodeID then begin
+                if move_cvt_flag = arg0^.op2^.node_id then begin
                     if arg0^.op2^.u.Dtype = Jdt then begin
                         var_s5 := zswc1;
                     end else begin
@@ -3755,7 +3755,7 @@ begin
         end;
         Uirst: begin
             if (arg0^.op2^.u.Opc = Ucvt) and ((arg0^.op2^.u.Dtype = Jdt) or (arg0^.op2^.u.Dtype = idt) and (opcode_arch = ARCH_64)) and (arg0^.op2^.u.Dtype2 = Qdt) and (arg0^.op2^.ref_count = 1) and (arg0^.u.Length = 4) then begin
-                move_cvt_flag := arg0^.op2^.nodeID;
+                move_cvt_flag := arg0^.op2^.node_id;
             end;
             eval(arg0^.op2, xnoreg);
             temp_s7 := ((arg0^.u.Lexlev & 1) <> 0);
@@ -3786,7 +3786,7 @@ begin
                     end
                 end;
             end;
-            if move_cvt_flag = arg0^.op2^.nodeID then begin
+            if move_cvt_flag = arg0^.op2^.node_id then begin
                 if arg0^.op2^.u.Dtype = Jdt then begin
                     var_s5 := zswc1;
                 end else begin
@@ -4614,7 +4614,7 @@ begin
         sp5B := get_free_fp_reg(nil, reg_kind_tab[arg0^.u.Dtype2], 1);
         emit_rrr(sp5E, sp5B, sp5A, sp5D);
         free_reg(sp5D);
-        if move_cvt_flag <> arg0^.nodeID then begin
+        if move_cvt_flag <> arg0^.node_id then begin
             free_fp_reg(sp5B, reg_kind_tab[arg0^.u.Dtype2]);
             temp_a0 := get_dest(arg0, arg1);
             move_to_dest(temp_a0, sp5B, arg0^.u.Dtype);

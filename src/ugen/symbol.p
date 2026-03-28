@@ -52,7 +52,6 @@ var
 var
     sym_hash_tab: array[0..255] of ^Symbol;
     non_local_mtag: integer;
-    sdata_max: integer;
     apc: boolean;
     excpt: u8;
     source_language: integer; { see cmplrs/uoptions.h for values }

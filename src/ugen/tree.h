@@ -13,7 +13,7 @@ type
     { 0x0C } prior: ^tree; { Previous node }
     
     { Data Fields }
-    { 0x10 } nodeID: 0..16#FFFFFF; { Node ID }
+    { 0x10 } node_id: 0..16#FFFFFF; { Node ID }
     { 0x14 } ref_count: u16;
     { 0x16 } unk16: u8;
     { 0x17 } mark: u8;
