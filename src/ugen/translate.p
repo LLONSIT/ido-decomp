@@ -181,7 +181,7 @@ end;
 
 (*
 *  Check if a number/value is a power of two using bit operations
-*   
+*
 *  @param: x number to check if it is a power of two
 *  @return 'true' if it is a power of two otherwise 'false'
 *)
@@ -193,7 +193,7 @@ begin
         { Negative numbers are not powers of two }
         return false;
     end;
-    
+
     bits := 0;
 
     while (true) do begin
@@ -230,7 +230,7 @@ var
 begin
     var_v0 := arg0.Ival;
     temp_v1 := arg1 + arg2;
-    
+
     Assert(temp_v1 div 4 <= var_v0);
 
     var_t0 := 0;
@@ -245,14 +245,14 @@ begin
     for i := var_a2 to var_t1 do begin
         var_t0 := var_t0 * 16 + h[arg0.Chars^.ss[i]];
     end;
-    
+
     return var_t0;
 end;
 
 procedure gen_set_str(arg0: ^tree);
 var
     var_s0: cardinal;
-    sp48: ^tree;    
+    sp48: ^tree;
     temp_v0: ^tree;
     temp_fp: ^tree;
     var_s4: ^tree;
@@ -263,21 +263,21 @@ begin
     var_s4 := arg0;
 
     arg0^.op1 := set_rewrite(temp_fp, 0, 32);
-    
+
     for var_s0 := 1 to ((arg0^.u.Length + 3) div 4) - 1 do begin
         temp_v0 := build_1op(arg0^.u.Opc, set_rewrite(temp_fp, var_s0 * 32, 32));
         temp_v0^.u.Dtype := Sdt;
         temp_v0^.u.Mtype := arg0^.u.Mtype;
-        
+
         temp_v0^.u.I1 := arg0^.u.I1;
-        
+
         temp_v0^.u.Offset := arg0^.u.Offset + var_s0 * 4;
         temp_v0^.u.Length := 4;
         temp_v0^.u.Lexlev := 0;
         var_s4^.next := temp_v0;
         var_s4 := temp_v0;
     end;
-    
+
     temp_v0^.next := sp48;
     arg0^.u.Length := 4;
     arg0^.u.Lexlev := 0;
@@ -287,35 +287,35 @@ end;
 procedure gen_set_istr(arg0: ^tree);
 var
     var_s0: cardinal;
-    sp48: ^tree;    
+    sp48: ^tree;
     temp_v0: ^tree;
     temp_fp: ^tree;
     var_s4: ^tree;
 begin
     Assert((arg0^.u.Opc In [Uisst, Uistr]));
-    
+
     sp48 := arg0^.next;
     temp_fp := arg0^.op2;
     var_s4 := arg0;
-    
+
 
     arg0^.op2 := set_rewrite(temp_fp, 0, 32);
-    
+
     for var_s0 := 1 to ((arg0^.u.Length + 3) div 4) - 1 do begin
         temp_v0 := set_rewrite(temp_fp, var_s0 * 32, 32);
         temp_v0 := build_2op(arg0^.u.Opc, dup_tree(arg0^.op1), temp_v0);
         temp_v0^.u.Dtype := Sdt;
         temp_v0^.u.Mtype := arg0^.u.Mtype;
-        
+
         temp_v0^.u.I1 := arg0^.u.I1;
-        
+
         temp_v0^.u.Offset := arg0^.u.Offset + var_s0 * 4;
         temp_v0^.u.Length := 4;
         temp_v0^.u.Lexlev := 0;
         var_s4^.next := temp_v0;
         var_s4 := temp_v0;
     end;
-    
+
     temp_v0^.next := sp48;
     arg0^.u.Length := 4;
     arg0^.u.Lexlev := 0;
@@ -328,7 +328,7 @@ var
     temp_v0: ^tree;
     var_s4: ^tree;
     var_s0: cardinal;
-    
+
 begin
     Assert(arg0^.u.Opc in [Uequ, Uneq]);
     var_s4 := nil;
@@ -361,7 +361,7 @@ var
     spD4: ^Tree;
     s0: ^Tree; { probably arg0 }
     v012: ^Tree;
-    
+
 begin
     case arg0^.u.Opc of
         Uldc:
@@ -406,7 +406,7 @@ begin
                 temp_v0 := ivalue(Ldt, 0, 0);
             end else begin
                 temp_v0 := set_rewrite(arg0^.op1, arg1 - arg0^.u.Offset * 8, arg2);
-            end;            
+            end;
         end;
 
         Usgs:
@@ -423,7 +423,7 @@ begin
                 if (arg1 <> 0) then begin
                     temp_v0 := build_2op(Uadd, dup_tree(arg0^.op1), ivalue(Jdt, 0, -arg1));
                     temp_v0^.u.Lexlev := 0;
-                end else begin 
+                end else begin
                     temp_v0 := dup_tree(arg0^.op1);
                 end;
                 temp_v0 := build_2op(Ules, temp_v0, ivalue(Ldt, 0, arg2));
@@ -480,7 +480,7 @@ begin
             Assert(arg0^.u.Dtype = Sdt);
             temp_v0 := set_rewrite(arg0^.op1, arg1, arg2);
         end;
-        
+
         otherwise:
         begin
             report_error(Internal, 560, "translate.p", "illegal u-code");
@@ -576,7 +576,7 @@ begin
         temp1^.u.Lexlev := 0;
         temp_v0 := build_2op(Ushr, temp1, ivalue(Ldt, 0, 31));
         temp_v0^.u.Dtype := Jdt;
-        if (lsb_first) then begin
+        if UGEN_LITTLE_ENDIAN then begin
             temp_v0 := build_2op(Ushr, temp_v0, dup_tree(temp1));
             temp_v0^.u.Dtype := Ldt;
             temp_v0 := build_2op(Ushl, temp_v0, dup_tree(temp2));
@@ -650,12 +650,12 @@ begin
     if a^.visited then begin
         if expression_opcs[a^.u.Opc] then begin
             return cse(a);
-        end; 
-        
+        end;
+
         if a^.u.Opc in [Uisld, Ulod] then begin
             return load_cse(a);
         end;
-        
+
         return a;
     end;
 
@@ -663,8 +663,8 @@ begin
 restart:
 
     a^.visited := True;
-    
-    case a^.u.Opc of 
+
+    case a^.u.Opc of
         Uloc:
         begin
             current_line := a^.u.I1;
@@ -684,7 +684,7 @@ restart:
         Uijp:
         begin
             a^.op1 := translate(a^.op1);
-            
+
             if a^.op1^.u.Opc = Ucg2 then begin
                 a^.u.Opc := Uujp;
                 a^.op2 := a^.op1^.op1;
@@ -702,7 +702,7 @@ restart:
         Utjp:
         begin
             a^.op1 := translate(a^.op1);
-            
+
             if is_constant(a^.op1) then begin
                 if a^.op1^.u.Dtype in [Idt, Kdt, Wdt] then begin
                     a3 := a^.op1^.u.Constval.dwval;
@@ -723,7 +723,7 @@ restart:
         Uchkt:
         begin
             a^.op1 := translate(a^.op1);
-            
+
             if is_constant(a^.op1) then begin
                 if a^.op1^.u.Dtype in [Idt, Kdt, Wdt] then begin
                     a3 := a^.op1^.u.Constval.dwval;
@@ -740,7 +740,7 @@ restart:
         Uchkn:
         begin
             a^.op1 := translate(a^.op1);
-            
+
             if is_constant(a^.op1) then begin
                 if a^.op1^.u.Dtype in [Idt, Kdt, Wdt] then begin
                     a3 := a^.op1^.u.Constval.dwval;
@@ -764,7 +764,7 @@ restart:
         Uchkl:
         begin
             a^.op1 := translate(a^.op1);
-            
+
             if not need_check_hl(a) then begin
                 s1 := a;
                 a := dup_tree(a^.op1);
@@ -792,7 +792,7 @@ restart:
                 a^.u.Opc := Umpy;
                 a^.op2 := dup_tree(a^.op1);
             end;
-            
+
             if (a^.u.Opc = Usqrt) and not (a^.u.Dtype in [Qdt, Rdt]) then begin
                 report_error(Internal, 856, "translate.p", "illegal data type for sqrt instruction");
             end;
@@ -967,7 +967,7 @@ restart:
                 otherwise;
             end;
         end;
-        
+
         Uent:
         begin
             leaf := True;
@@ -980,7 +980,7 @@ restart:
                 vreg_offset := 32;
                 max_vreg_offset := vreg_offset + 4 * (n_unsaved_regs);
             end;
-        
+
             vreg_count := 0;
             if cardinal(n_fp_parm_regs * 2) = 4 then begin
                 fp_vreg_offset := 176;
@@ -1035,7 +1035,7 @@ restart:
                 while (spE4^.u.Opc <> Uujp) do begin
                     if not (spE4^.u.Opc in [Ubgnb, Ucomm, Udef, Uendb, Ulex, Uloc, Unop, Uoptn, Usdef]) then begin
                         if not ((spE4^.u.Opc = Ustr) and
-                                ((ureg(spE4^.u) = gpr_v0) or (ureg(spE4^.u) = xfr0)) and 
+                                ((ureg(spE4^.u) = gpr_v0) or (ureg(spE4^.u) = xfr0)) and
                                 (spE4^.op1^.u.Opc = Ulod) and
                                 (spE4^.op1^.u.Offset = spE4^.u.Offset)) then begin
                             goto lab1;
@@ -1051,7 +1051,7 @@ restart:
                 if s0^.u.Opc <> Uend then begin
                     goto lab1;
                 end;
-                
+
                 s0 := spE4^.next;
                 while s0^.u.Opc in [Ubgnb, Ucomm, Udef, Uendb, Ulex, Uloc, Unop, Uoptn, Usdef] do begin
                     s0 := s0^.next;
@@ -1075,7 +1075,7 @@ restart:
                 while (spE4^.u.Opc <> Umst) do begin
                     if (spE4^.u.Opc = Urpar) and
                        (spE4^.u.Dtype = addr_dtype) and
-                       (spE4^.prior^.u.Opc = Ustr) and 
+                       (spE4^.prior^.u.Opc = Ustr) and
                        ((spE4^.prior^.op1^.u.Opc = Ulod) or (spE4^.prior^.op1^.u.Opc = Ulda)) and
                        ((spE4^.prior^.op1^.u.Mtype = Mmt) or (spE4^.prior^.op1^.u.Mtype = Pmt)) then begin
                         goto lab1;
@@ -1110,7 +1110,7 @@ restart:
                     calls := calls + 1;
                 end;
             end;
-            
+
             expr_count := 0;
             load_count := 0;
             bb_size := 0;
@@ -1128,12 +1128,12 @@ restart:
         begin
             a^.op1 := translate(a^.op1);
             a3 := GET_STDARGS_NUM(a^.u.Push);
-            if a3 > 0 then begin 
+            if a3 > 0 then begin
                 map_pars_to_regs(mst_node, a3);
             end else begin
                 map_pars_to_regs(mst_node, -1);
             end;
-                
+
             calls := calls + 1;
             expr_count := 0;
             load_count := 0;
@@ -1204,7 +1204,7 @@ restart:
             a^.op1 := translate(a^.op1);
             a^.op2 := translate(a^.op2);
             load_count := 0;
-            expr_count := 0;            
+            expr_count := 0;
             bb_size := 0;
         end;
 
@@ -1438,7 +1438,7 @@ restart:
                 end;
                 a^.u.Opc := Ushr;
                 a^.visited := False;
-                
+
                 a := build_2op(Uand, a, s2);
             end else begin
                 a^.u.Opc := Ushl;
@@ -1459,7 +1459,7 @@ restart:
                 spF4^.op2 := a;
                 a := spF4;
             end;
-            
+
             goto restart;
         end;
 
@@ -1472,7 +1472,7 @@ restart:
         Ustr:
         begin
             Assert(a^.ref_count = 1);
-            
+
             if (a^.u.Dtype = Sdt) and (a^.u.Length > 4) then begin
                 gen_set_str(a);
             end;
@@ -1482,7 +1482,7 @@ restart:
             end;
 
             if (a^.u.Length <= 4) then begin
-                if (a^.op1^.u.Opc = Ucvtl) and 
+                if (a^.op1^.u.Opc = Ucvtl) and
                    (a^.u.Length * 8 = a^.op1^.u.I1) and
                    not IS_OVERFLOW_ATTR(a^.op1^.u.Lexlev) and
                    (a^.u.Mtype <> Rmt) then begin
@@ -1532,12 +1532,12 @@ restart:
             if a^.u.Opc = Uisld then begin
                 return load_cse(a);
             end;
-            
+
             if a^.u.Opc = Uilod then begin
                 a := cse(a);
             end;
         end;
-        
+
 
         Uirld:
         begin
@@ -1579,7 +1579,7 @@ restart:
                 exprs[1] := a;
                 bb_size := 0;
             end;
-            
+
         end;
 
         Uirst:
@@ -1607,7 +1607,7 @@ restart:
             expr_count := 1;
             exprs[1] := a;
             bb_size := 0;
-            
+
         end;
 
         Uxjp:
@@ -1634,10 +1634,10 @@ restart:
         begin
             a^.u.Opc := Ulod;
             a^.u.Mtype := Rmt;
-            a^.u.Offset := 4 * integer(gpr_sp);   
+            a^.u.Offset := 4 * integer(gpr_sp);
             a^.unk16 := 0;
         end;
-        
+
         Ustsp:
         begin
             a^.op1 := translate(a^.op1);
@@ -1695,7 +1695,7 @@ restart:
 
         a := cse(a);
     end;
-    
+
     return a;
 end;
 
@@ -1835,8 +1835,8 @@ begin
         return arg0;
     end;
 
-    if (((arg0^.op1 = nil) or (arg0^.op1^.ref_count >= 2) or 
-    (arg0^.op1^.u.Opc = Uldc)) and ((arg0^.op2 = nil) or 
+    if (((arg0^.op1 = nil) or (arg0^.op1^.ref_count >= 2) or
+    (arg0^.op1^.u.Opc = Uldc)) and ((arg0^.op2 = nil) or
     (arg0^.op2^.ref_count >= 2) or (arg0^.op2^.u.Opc = Uldc))) then begin
 
         for i := expr_count downto 1 do begin
@@ -1916,13 +1916,13 @@ begin
                 free_tree_and_cse(arg0^.op1);
             end;
         end;
-    
+
         if (arg0^.op2 <> nil) then begin
             if not (arg0^.u.Opc in [Uaent, Ucg2, Uclab, Uent, Ulab, Unop, Uijp, Ufjp, Utjp, Uujp, Uxjp]) then begin
                 free_tree_and_cse(arg0^.op2);
             end;
         end;
-    
+
         free_node(arg0);
     end;
 end;
@@ -1931,7 +1931,7 @@ function check_vreg({arg0: ^tree; arg1: boolean});
 var
     i: integer;
     temp_s1: ^tree;
-    v0: ^tree;    
+    v0: ^tree;
 begin
     for i := 0 to vreg_count - 1 do begin
         temp_s1 := vregs[i];
@@ -1955,11 +1955,11 @@ begin
                     v0^.ref_count2 := 1;
                 end;
             end;
-            
+
             return true;
         end;
     end;
-    
+
     return false;
 end;
 
@@ -2121,10 +2121,10 @@ function load_cse({arg0: ^Tree});
 var
     temp_v0: ^tree;
     temp_a1: ^tree;
-    
+
     var_v0: ^tree;
     i: 1..5;
-    
+
 begin
     if (no_cse_flag > 0) then begin
         return arg0;
@@ -2134,15 +2134,15 @@ begin
         return arg0;
     end;
 
-    for i := load_count downto 1 do begin 
+    for i := load_count downto 1 do begin
         temp_a1 := loads[i];
 
         if (temp_a1 <> nil) then begin
             if ((temp_a1^.u.Dtype = arg0^.u.Dtype) and (temp_a1^.u.Mtype = arg0^.u.Mtype) and (temp_a1^.u.I1 = arg0^.u.I1)) then begin
-                if ((UGEN_LITTLE_ENDIAN and (temp_a1^.u.Offset = arg0^.u.Offset)) or 
+                if ((UGEN_LITTLE_ENDIAN and (temp_a1^.u.Offset = arg0^.u.Offset)) or
                     (UGEN_BIG_ENDIAN and (temp_a1^.u.Offset + temp_a1^.u.Length = arg0^.u.Offset + arg0^.u.Length))) then begin
                     if (temp_a1^.u.Length = arg0^.u.Length) then begin
-                        
+
                         if (temp_a1^.u.Opc = Ustr) then begin
                             var_v0 := dup_tree(temp_a1^.op1);
                         end else if (temp_a1^.u.Opc = Uisst) then begin
@@ -2152,7 +2152,7 @@ begin
                         end else begin
                             var_v0 := dup_tree(temp_a1);
                         end;
-        
+
                         if (((source_language = C_SOURCE) and (arg0^.u.Length < temp_a1^.u.Length)) or
                             ((arg0^.u.Length < 4) and (temp_a1^.u.Opc in [Uisst, Ustr]))) then begin
                             temp_v0 := build_1op(Ucvtl, var_v0);
@@ -2160,13 +2160,13 @@ begin
                             temp_v0^.u.I1 := arg0^.u.Length * 8;
                             var_v0 := translate_cvtl(temp_v0);
                         end;
-        
+
                         if (var_v0^.u.Opc = Uldc) then begin
                             if (var_v0^.u.Dtype <> arg0^.u.Dtype) then begin
                                 var_v0^.u.Dtype := arg0^.u.Dtype;
                             end;
                         end;
-        
+
                         free_tree(arg0);
                         return var_v0;
                     end;
@@ -2179,7 +2179,7 @@ begin
         load_count := load_count + 1;
         loads[load_count] := arg0;
     end;
-    
+
     return arg0;
 end;
 
@@ -2272,7 +2272,7 @@ begin
             end else if (arg0^.op1 = arg0^.op2) then begin
                 return false;
             end;
-    
+
             arg0 := arg0^.op2;
             goto loop;
         end;
@@ -2348,7 +2348,7 @@ var
     var_s0: ^tree;
     var_a1: ^tree;
 begin
-    if (is_constant(arg0^.op1)) then begin 
+    if (is_constant(arg0^.op1)) then begin
         return fold(arg0);
     end;
 
@@ -2413,7 +2413,7 @@ begin
         end;
         var_s0^.u.Dtype := sp37;
     end;
-    
+
     return var_s0;
 end;
 
@@ -2427,7 +2427,7 @@ begin
     end;
 
     if (is_constant(arg0^.op1)) then begin
-        return ((arg0^.u.Opc = Uchkh) and (arg0^.u.I1 < arg0^.op1^.u.Offset2)) or 
+        return ((arg0^.u.Opc = Uchkh) and (arg0^.u.I1 < arg0^.op1^.u.Offset2)) or
         ((arg0^.u.Opc = Uchkl) and (arg0^.u.I1 > arg0^.op1^.u.Offset2)) ;
     end;
 

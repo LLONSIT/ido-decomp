@@ -6,7 +6,7 @@
 var
     tree_break: integer := 0; /* .data */
     tree_mark: integer;
-    tree_counter: integer;
+    tree_counter: integer; { Tree nodes counter }
     label_id_counter: integer;
     tree_heap: pointer;
     addr_dtype : Datatype;
@@ -32,15 +32,15 @@ var
     p_Tree: ^Tree;
 begin
     p_Tree := alloc_new(sizeof(Tree), tree_heap);
-    
-    tree_counter := tree_counter + 1;    
-    
+
+    tree_counter := tree_counter + 1;
+
     p_Tree^.node_id := tree_counter;
     p_Tree^.next := nil;
     p_Tree^.prior := nil;
     p_Tree^.op1 := nil;
-    p_Tree^.op2 := nil;    
-    
+    p_Tree^.op2 := nil;
+
     p_Tree^.ref_count := 1;
     p_Tree^.ref_count2 := 0;
     p_Tree^.reg := xnoreg;
@@ -48,7 +48,7 @@ begin
     p_Tree^.unk16 := 0;
     p_Tree^.mark := tree_mark;
     p_Tree^.visited := false;
-    
+
     p_Tree^.u.Opc := Unop;
     p_Tree^.u.LexLev := 0;
     p_Tree^.u.Offset2 := 0;
@@ -69,6 +69,7 @@ begin
     return p_tree;
 end;
 
+{ Builds a tree node with one child }
 function build_u1(var u: Bcrec; op1: ^Tree): pointer;
 var
     p_tree: ^tree;
@@ -79,6 +80,7 @@ begin
     return p_tree;
 end;
 
+{ Builds a tree node with two childs }
 function build_u2(var u: Bcrec; op1: ^Tree; op2: ^Tree): pointer;
 var
     p_tree: ^tree;
@@ -90,39 +92,38 @@ begin
     return p_tree;
 end;
 
-function build_op(arg0: Uopcode): pointer;
+function build_op(opc: Uopcode): pointer;
 var
     p_tree: ^tree;
 begin
     p_tree := new_tree();
-    p_tree^.u.Opc := arg0;
+    p_tree^.u.Opc := opc;
     return p_tree;
 end;
 
-function build_1op(uopc: Uopcode; op: ^tree): pointer;
+function build_1op(opc: Uopcode; op: ^tree): pointer;
 var
     pTree: ^tree;
 begin
-
     pTree := new_tree();
-    pTree^.u.Opc := uopc;
+    pTree^.u.Opc := opc;
 
     case op^.u.Opc of
-        Uequ, {23}
-        Ugeq, {28}
-        Ugrt, {29}
-        Uiequ,{2E}
-        Uigeq,{2F}
-        Uigrt,{30}
-        Uileq,{34}
-        Uiles,{35}
-        Uineq,{38}
-        Uinn, {3A}
-        Uleq, {4D}
-        Ules, {4E}
-        Uneq: {5F}
+        Uequ,
+        Ugeq,
+        Ugrt,
+        Uiequ,
+        Uigeq,
+        Uigrt,
+        Uileq,
+        Uiles,
+        Uineq,
+        Uinn,
+        Uleq,
+        Ules,
+        Uneq:
             pTree^.u.Dtype := Ldt;
-        Ulda: {47}
+        Ulda:
             pTree^.u.Dtype := addr_dtype;
         otherwise:
             pTree^.u.Dtype := op^.u.Dtype;
@@ -140,33 +141,33 @@ begin
     pTree := new_tree();
     pTree^.u.Opc := Opc;
 
-    if Opc <> Uujp then begin 
+    if Opc <> Uujp then begin
         case op1^.u.Opc of
-            Uequ, {23}
-            Ugeq, {28}
-            Ugrt, {29}
-            Uiequ,{2E}
-            Uigeq,{2F}
-            Uigrt,{30}
-            Uileq,{34}
-            Uiles,{35}
-            Uineq,{38}
-            Uinn, {3A}
-            Uleq, {4D}
-            Ules, {4E}
-            Uneq: {5F}
+            Uequ,
+            Ugeq,
+            Ugrt,
+            Uiequ,
+            Uigeq,
+            Uigrt,
+            Uileq,
+            Uiles,
+            Uineq,
+            Uinn,
+            Uleq,
+            Ules,
+            Uneq:
                 pTree^.u.Dtype := Ldt;
-            Ulda: {47}
+            Ulda:
                 pTree^.u.Dtype := addr_dtype;
             otherwise:
             begin
                 pTree^.u.Dtype := op1^.u.Dtype;
-            end;    
+            end;
         end;
         pTree^.u.Length := op1^.u.Length;
     end;
-    
-    
+
+
     pTree^.op1 := op1;
     pTree^.op2 := op2;
     return pTree;
@@ -182,7 +183,7 @@ var
     temp_s1: ^tree;
 begin
     init:
-    
+
     t^.ref_count := t^.ref_count - 1;
 
     if (t^.ref_count = 0) then begin
@@ -204,10 +205,10 @@ begin
     t := temp_s1;
 
     if t <> nil then begin
-            goto init; 
+            goto init;
         end;
     end;
-end;    
+end;
 
 procedure delete_statement(arg0: ^tree);
 begin
@@ -242,7 +243,7 @@ begin
     {Sanity check}
         if (arg0^.ref_count = 16#FFFF) then begin
             report_error(Internal, 300, 'tree_utils.p', 'ref_count overflow');
-        end else begin 
+        end else begin
             arg0^.ref_count := arg0^.ref_count + 1;
         end;
         ret := arg0;
@@ -263,10 +264,10 @@ begin
     p_tree := new_tree();
     p_tree^.u.Opc := Uldc;
     p_tree^.u.Dtype := Dtype;
-    
+
     if (Dtype in [Idt, Kdt, Wdt]) then begin
-        p_tree^.u.Constval.dwval_l:= dwval_h;
-        p_tree^.u.Constval.dwval_h:= dwval_l;
+        p_tree^.u.Constval.dwval_l := dwval_h;
+        p_tree^.u.Constval.dwval_h := dwval_l;
         p_tree^.u.Length := 8;
     end else begin
         p_tree^.u.Constval.Ival := dwval_h;
@@ -289,7 +290,7 @@ begin
         Kdt -> u64
         Wdt -> s64*
     }
-    
+
     if (Dtype in [Idt, Kdt, Wdt]) then begin
         temp_v0^.u.Constval.dwval := arg1;
         temp_v0^.u.Length := 8;
@@ -307,7 +308,7 @@ var
     p_tree: ^tree;
     temp_v0_2: stringtextptr;
     len: cardinal;
-    
+
 begin
     p_tree := new_tree();
     p_tree^.u.Opc := Uldc;
@@ -322,8 +323,8 @@ begin
     while (arg1[len] <> ' ') do begin
         len := len + 1;
     end;
-    
-    p_tree^.u.Constval.Ival := len - 1;    
+
+    p_tree^.u.Constval.Ival := len - 1;
     new(temp_v0_2);
     p_tree^.u.Constval.chars := temp_v0_2;
 
@@ -342,8 +343,8 @@ function is_zero(arg0: ^Tree): boolean;
 begin
     if (arg0^.u.Dtype in [Idt, Kdt, Wdt]) then begin
         is_zero := boolean((arg0^.u.Opc = Uldc) and (arg0^.u.Constval.dwval_h = 0) and (arg0^.u.Constval.dwval_l = 0));
-    end else 
-    
+    end else
+
     is_zero := (arg0^.u.Opc = Uldc) and ((arg0^.u.Constval.Ival = 0));
 end;
 
@@ -393,23 +394,23 @@ function const_equal(arg0: ^Tree; arg1: ^Tree): boolean;
         end;
         return true;
     end;
-    
+
 begin
     if ((arg0^.u.Opc <> Uldc) or (arg1^.u.Opc <> Uldc)) then begin
         return false;
     end;
 
-    if (((arg0^.u.Dtype in [Idt, Kdt, Wdt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and 
+    if (((arg0^.u.Dtype in [Idt, Kdt, Wdt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and
         (arg0^.u.Constval.dwval = arg1^.u.Constval.dwval) ))  then begin
         return true;
     end;
 
-    if ((arg0^.u.Dtype in [Adt, Hdt, Jdt, Ldt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and 
+    if ((arg0^.u.Dtype in [Adt, Hdt, Jdt, Ldt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and
         (arg0^.u.Constval.Ival = arg1^.u.Constval.Ival)) then begin
         return true;
     end;
 
-    if ((arg0^.u.Dtype in [Qdt, Rdt, Xdt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and 
+    if ((arg0^.u.Dtype in [Qdt, Rdt, Xdt]) and (arg1^.u.Dtype = arg0^.u.Dtype) and
         (arg0^.u.Constval.Ival = arg1^.u.Constval.Ival) and (func_0044AED0())) then begin
         return true;
     end;
