@@ -3,61 +3,66 @@
 var
     print_warnings: boolean;
     current_line: cardinal;
-    glevel: u8;
-    ignore_vreg: u8;
-    olevel: u8;
+    glevel: DebugLevels;
+    ignore_vreg: boolean;
+    olevel: OptLevels;
     opt_cse: u8;
     opt_labels: boolean;
-    opt_parms: u8;
+    opt_parms: boolean;
     tail_call_opt: boolean;
 
 
-
+(*
+*  Decides the different optimizations that ugen will use during the codegen processs
+*
+*  @param optLevel   Optimization level (see OptLevels)
+*  @param debugLevel Debug level (see DebugLevels)
+*)
 #line 22 "opt.p"
-procedure set_opts(arg0: u8; arg1: u8);
+procedure set_opts(optLevel: OptLevels; debugLevel: DebugLevels);
 begin
-    glevel := arg1;
-    olevel := arg0;
-    if (arg1 = 2) and (arg0 >= 2) then begin
-        arg0 := 1;
+    glevel := debugLevel;
+    olevel := optLevel;
+    if (debugLevel = DEBUG_LEVEL_g2) and (optLevel >= OPT_LEVEL_O2) then begin
+        optLevel := OPT_LEVEL_O1;
     end;
 
-    case arg0 of
-        0:
+    case optLevel of
+        OPT_LEVEL_O0:
         begin
             opt_cse := 1;
             opt_labels := false;
-            opt_parms := 1;
-            ignore_vreg := 0;
+            opt_parms := true;
+            ignore_vreg := false;
             tail_call_opt := false;
         end;
-        1:
+        OPT_LEVEL_O1:
         begin
-            if (arg1 = 0) or (arg1 = 3) then begin
+            if (debugLevel = DEBUG_LEVEL_g0) or (debugLevel = DEBUG_LEVEL_g3) then begin
                 opt_cse := 2;
             end else begin
                 opt_cse := 1;
             end;
 
-            opt_labels := (arg1 = 0) or (arg1 = 3);
-                opt_parms := 1;
-            ignore_vreg := 0;
+            opt_labels := (debugLevel = DEBUG_LEVEL_g0) or (debugLevel = DEBUG_LEVEL_g3);
+            opt_parms := true;
+            ignore_vreg := false;
             tail_call_opt := false;
         end;
-        2,
-        3,
-        4:
+        OPT_LEVEL_O2,
+        OPT_LEVEL_O3,
+        OPT_LEVEL_O4:
         begin
-            if (arg1 = 0) or (arg1 = 3) then begin
-                    opt_cse := 2;
+            if (debugLevel = DEBUG_LEVEL_g0) or (debugLevel = DEBUG_LEVEL_g3) then begin
+                opt_cse := 2;
             end else begin
                 opt_cse := 1;
             end;
-    
-            opt_labels := (arg1 = 0) or (arg1 = 3);
-            opt_parms := 0;
-            ignore_vreg := 1;
-            if (arg0 >= 3) and (tail_call_opt) then begin
+
+            opt_labels := (debugLevel = DEBUG_LEVEL_g0) or (debugLevel = DEBUG_LEVEL_g3);
+            opt_parms := false;
+            ignore_vreg := true;
+            if (optLevel >= OPT_LEVEL_O3) and (tail_call_opt) then begin
                 tail_call_opt := true;
             end else begin
                 tail_call_opt := false;
@@ -65,4 +70,3 @@ begin
         end;
     end;
 end;
-

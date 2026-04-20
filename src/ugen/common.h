@@ -28,6 +28,21 @@ type
         Internal
     );
 
+    OptLevels = (
+        OPT_LEVEL_O0,
+        OPT_LEVEL_O1,
+        OPT_LEVEL_O2,
+        OPT_LEVEL_O3,
+        OPT_LEVEL_O4
+    );
+
+    DebugLevels = (
+        DEBUG_LEVEL_g0,
+        DEBUG_LEVEL_g1,
+        DEBUG_LEVEL_g2,
+        DEBUG_LEVEL_g3
+    );
+
 { global variables }
 
 var
@@ -36,7 +51,7 @@ var
     opcode_arch: ( ARCH_32, ARCH_64 );
     isa: ( ISA_MIPS1, ISA_MIPS2, ISA_MIPS3 );
     ugen_fp_callee_saved: set of registers;
-    saved_regs: set of registers;    
+    saved_regs: set of registers;
     n_cg_regs: integer;
     n_unsaved_regs: integer;
     n_unsaved_fp_regs: integer;
