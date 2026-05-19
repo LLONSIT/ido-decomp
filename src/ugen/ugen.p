@@ -101,7 +101,7 @@ procedure set_opts(arg0: OptLevels; arg1: DebugLevels); external;
 
 program ugen;
 
-label default;
+label default; { original name: badoption }
 var
     treeDumpFileName: Filename; {Name of the file where the different tree phases are dumped/logged}
     treeDumpFile: Text; {File where the different tree phases are dumped/logged}
@@ -137,6 +137,7 @@ var
 
     { Inner functions.. }
 
+    { original name: atoi }
     function str_atoi(var arg0: Filename): integer;
     var
         len: integer;
@@ -153,7 +154,8 @@ var
         return value;
     end;
 
-    procedure func_0044B2EC(arg0: ^Tree);
+    { original name: assign_dense_labels }
+    procedure assign_dense_labels(arg0: ^Tree);
     var
         iter: ^tree;
     begin
@@ -166,7 +168,8 @@ var
         end;
     end;
 
-    procedure func_0044B384(opt: char; regs: integer);
+    { original name: process_reg }
+    procedure process_reg(opt: char; regs: integer);
     begin
         case opt of                                 /* irregular */
             CASE_ARG('a')
@@ -202,8 +205,8 @@ var
         end;
     end;
 
-
-    procedure set_fp_regs(opt: char; regs: integer);
+    { original name: process_fp_reg }
+    procedure process_fp_reg(opt: char; regs: integer);
     begin
         case (opt) of
             CASE_ARG('a')
@@ -245,6 +248,7 @@ var
         end;
     end;
 
+    { original name: dump_tree }
     procedure dump_tree(t: ^Tree; phase: ugen_str);
     begin
         if (treeDumpFileName[1] <> chr(0)) then begin
@@ -261,6 +265,7 @@ var
         end;
     end;
 
+    { original name: filenameassign }
     procedure copy_filename(var dest: Filename; src: opt_str);
     var
         len: integer;
@@ -277,7 +282,7 @@ var
         end;
     end;
 
-
+    { original name: make_temp_file }
     procedure create_temp_file();
     var
         fd: integer;
@@ -293,12 +298,14 @@ var
         end;
     end;
 
+    { original name: remove_temp_file }
     procedure unlink_temp_file();
     begin
         unlink(ugenTempFileName);
     end;
 
 
+    { original name: filenameeq }
     function streq(var str1: Filename; str2: opt_str): boolean;
     var pos: integer;
     begin
@@ -528,7 +535,7 @@ begin
                                 index := index + 1;
                                 var_s0 := arg[5];
                                 argv(index, arg);
-                                func_0044B384(var_s0, str_atoi(arg));
+                                process_reg(var_s0, str_atoi(arg));
                             end else goto default;
 
                         CASE_ARG('f')
@@ -536,7 +543,7 @@ begin
                                 index := index + 1;
                                 var_s0 := arg[6];
                                 argv(index, arg);
-                                set_fp_regs(var_s0, str_atoi(arg));
+                                process_fp_reg(var_s0, str_atoi(arg));
                             end else begin
                                 if (streq(arg, "-fp32regs")) then begin
                                     fp32regs := true;
@@ -803,7 +810,7 @@ begin
                 end;
             end;
 
-            func_0044B2EC(pTree);
+            assign_dense_labels(pTree);
 
             if (sp9C0[1] <> chr(0)) then begin
                 inituwrite(sp9C0);

@@ -18,14 +18,14 @@ var
     current_line: integer;
     first_pmt_offset: integer;
     framesz_relocatable: s8;
-    glevel: u8;
-    has_cia_in_file: s8;
+    glevel: DebugLevels;
+    has_cia_in_file: boolean;
     ignore_vreg: s8;
     ls_stamp: integer;
     ms_stamp: integer;
     non_local_mtag: integer;
     nooffsetopt: boolean;
-    opt_parms: u8;
+    opt_parms: boolean;
     pseudo_leaf: u8;
     resident_text: s8;
     reverse: extern array[Uopcode] of Uopcode;
@@ -650,7 +650,7 @@ end;
             var_s2 := sp1B8;
             while (var_s2 <> nil) and (var_s2^.u.Offset2 <> -1) do begin
                 if var_s2^.u.Lexlev <> 1 then begin
-                    if (sp1F0 <> 0) or ((sp1F0 = 0) and (opt_parms = 0) and (not sp183)) then begin
+                    if (sp1F0 <> 0) or ((sp1F0 = 0) and not (opt_parms) and (not sp183)) then begin
                         var_v0 := sp1BC;
                         while (var_v0 <> nil) do begin
                             if (var_v0^.u.Offset2 = var_s2^.u.Offset2) then goto next;
@@ -754,7 +754,7 @@ begin
                 first_pmt_offset := 0;
                 reversed_stack := false;
                 resident_text := 0;
-                has_cia_in_file := 0; { Bool }
+                has_cia_in_file := false;
             end;
 
             CASE_OPC(Ustp):
@@ -783,6 +783,7 @@ begin
             CASE_OPC(Uloc),
             CASE_OPC(Uregs):
             begin
+               { Statement list starts with "comm" }
                 tree_s3 := build_u(ucode);
                 if statement_list = nil then begin
                     statement_list := tree_s3;
@@ -804,7 +805,7 @@ begin
                         end;
                     end;
                 end else begin
-                    opt_parms := 0;
+                    opt_parms := false;
                     ignore_vreg := 1;
                     sp127 := true;
                 end;
@@ -825,11 +826,11 @@ begin
                     resident_text := 1;
                 end else if (sp1AC^.u.I1 = UCO_SOURCE) then begin
                     source_language := ucode.Length;
-                    if ((ucode.Length = ADA_SOURCE) and (glevel <> 0) and (glevel < 3)) then begin
-                        opt_parms := 0;
+                    if ((ucode.Length = ADA_SOURCE) and (glevel <> DEBUG_LEVEL_g0) and (glevel < DEBUG_LEVEL_g3)) then begin
+                        opt_parms := false;
                     end;
                 end else if (sp1AC^.u.I1 = UCO_USE_AS0) then begin
-                    has_cia_in_file := 1;
+                    has_cia_in_file := true;
                 end else if (sp1AC^.u.I1 = UCO_STACK_LIMIT) then begin
                     stack_limit_bn := sp1AC^.u.Length;
                 end;
@@ -912,14 +913,14 @@ begin
             end;
 
             if (not sp127) then begin
-                opt_parms := 1;
+                opt_parms := true;
                 ignore_vreg := 0;
             end;
 
             if (sp1B8 <> nil) then begin
                 map_pdefs_to_regs(sp1B8, sp17C);
 
-                if (opt_parms <> 0) then if
+                if (opt_parms) then if
                 ((sp182) or ((sp1F0 = 0) and (sp17C <> -1)) or (pseudo_leaf <> 0)) then if
                 ((source_language <> ADA_SOURCE) or (not sp167)) then if
                 (not sp165) then begin
