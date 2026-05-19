@@ -16,9 +16,7 @@ var
 *  Decides the different optimizations that ugen will use during the codegen processs
 *
 *  @param optLevel   Optimization level (see OptLevels)
-*  @param debugLevel Debugif (debugLevel = DebugLevels(2)) and (cardinal(optLevel) >= (2)) then begin
-        optLevel := OPT_LEVEL_O1;
-    end; level (see DebugLevels)
+*  @param debugLevel Debug level (see DebugLevels)
 *)
 #line 21 "opt.p"
 procedure set_opts(optLevel: OptLevels; debugLevel: DebugLevels);
