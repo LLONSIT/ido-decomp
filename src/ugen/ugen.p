@@ -137,7 +137,7 @@ var
 
     { Inner functions.. }
 
-    { original name: atoi }
+    { Original name: atoi }
     function str_atoi(var arg0: Filename): integer;
     var
         len: integer;
@@ -154,7 +154,7 @@ var
         return value;
     end;
 
-    { original name: assign_dense_labels }
+    { Original name: assign_dense_labels }
     procedure assign_dense_labels(arg0: ^Tree);
     var
         iter: ^tree;
@@ -168,7 +168,7 @@ var
         end;
     end;
 
-    { original name: process_reg }
+    { Original name: process_reg }
     procedure process_reg(opt: char; regs: integer);
     begin
         case opt of                                 /* irregular */
@@ -205,7 +205,7 @@ var
         end;
     end;
 
-    { original name: process_fp_reg }
+    { Original name: process_fp_reg }
     procedure process_fp_reg(opt: char; regs: integer);
     begin
         case (opt) of
@@ -248,7 +248,7 @@ var
         end;
     end;
 
-    { original name: dump_tree }
+    { Original name: dump_tree }
     procedure dump_tree(t: ^Tree; phase: ugen_str);
     begin
         if (treeDumpFileName[1] <> chr(0)) then begin
@@ -282,7 +282,7 @@ var
         end;
     end;
 
-    { original name: make_temp_file }
+    { Original name: make_temp_file }
     procedure create_temp_file();
     var
         fd: integer;
@@ -298,14 +298,14 @@ var
         end;
     end;
 
-    { original name: remove_temp_file }
+    { Original name: remove_temp_file }
     procedure unlink_temp_file();
     begin
         unlink(ugenTempFileName);
     end;
 
 
-    { original name: filenameeq }
+    { Original name: filenameeq }
     function streq(var str1: Filename; str2: opt_str): boolean;
     var pos: integer;
     begin

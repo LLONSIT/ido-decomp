@@ -27,6 +27,7 @@ begin
         optLevel := OPT_LEVEL_O1;
     end;
 
+    { Required to match }
     case ord(optLevel) of
         ord(OPT_LEVEL_O0):
         begin
